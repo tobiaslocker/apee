@@ -22,7 +22,7 @@ include_directories(include)
 
 set(
     SOURCES
-    src/api.cpp
+    src/apee.cpp
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
