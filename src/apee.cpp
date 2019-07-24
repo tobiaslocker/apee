@@ -22,6 +22,11 @@ namespace apee {
 
 using namespace logger;
 
+Request from_beast(http::request<http::dynamic_body> req) {
+  return Request(std::string_view(req.target().data(), req.target().length()),
+                 static_cast<Method>(req.method()));
+}
+
 class Connection : public std::enable_shared_from_this<Connection> {
   src::severity_channel_logger<severity_level, std::string> m_lg;
   std::string m_channel = "http_connection";
@@ -131,8 +136,7 @@ class Connection : public std::enable_shared_from_this<Connection> {
     m_response.set(http::field::server, "Beast");
 
     if (m_request_handler) {
-
-
+      m_request_handler->on_request(from_beast(m_request));
       //    auto response =
       //    m_request_handler->on_get_request(m_request.target());
       //    m_response.set(http::field::content_type, "application/json");
@@ -183,22 +187,22 @@ class Service::impl {
   std::string m_channel = "http_server";
   std::shared_ptr<AbstractRequestHandler> m_handler;
 
-public:
-//  impl()
-//      : m_acceptor{m_ioc, {boost::asio::ip::make_address("0.0.0.0"), 80}},
-//        m_socket{m_ioc} {}
+ public:
+  //  impl()
+  //      : m_acceptor{m_ioc, {boost::asio::ip::make_address("0.0.0.0"), 80}},
+  //        m_socket{m_ioc} {}
 
   impl(std::shared_ptr<AbstractRequestHandler> handler)
       : m_acceptor{m_ioc, {boost::asio::ip::make_address("0.0.0.0"), 80}},
         m_socket{m_ioc},
         m_handler{handler} {
-      logger::init();
+    logger::init();
   }
 
   impl(std::string const &address, uint16_t port)
       : m_acceptor{m_ioc, {boost::asio::ip::make_address(address), port}},
         m_socket{m_ioc} {
-      logger::init();
+    logger::init();
   }
 
   //  impl(Config const &config)
@@ -228,9 +232,7 @@ public:
 Service::Service(std::shared_ptr<AbstractRequestHandler> handler)
     : d_ptr{std::make_unique<impl>(handler)} {}
 
-void Service::run() {
-    d_ptr->run();
-}
+void Service::run() { d_ptr->run(); }
 
 Service::~Service() = default;
 
