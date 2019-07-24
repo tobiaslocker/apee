@@ -131,6 +131,8 @@ class Connection : public std::enable_shared_from_this<Connection> {
     m_response.set(http::field::server, "Beast");
 
     if (m_request_handler) {
+
+
       //    auto response =
       //    m_request_handler->on_get_request(m_request.target());
       //    m_response.set(http::field::content_type, "application/json");
@@ -180,6 +182,7 @@ class Service::impl {
   tcp::socket m_socket;
   std::string m_channel = "http_server";
   std::shared_ptr<AbstractRequestHandler> m_handler;
+
 public:
 //  impl()
 //      : m_acceptor{m_ioc, {boost::asio::ip::make_address("0.0.0.0"), 80}},
@@ -188,11 +191,15 @@ public:
   impl(std::shared_ptr<AbstractRequestHandler> handler)
       : m_acceptor{m_ioc, {boost::asio::ip::make_address("0.0.0.0"), 80}},
         m_socket{m_ioc},
-        m_handler{handler} {}
+        m_handler{handler} {
+      logger::init();
+  }
 
   impl(std::string const &address, uint16_t port)
       : m_acceptor{m_ioc, {boost::asio::ip::make_address(address), port}},
-        m_socket{m_ioc} {}
+        m_socket{m_ioc} {
+      logger::init();
+  }
 
   //  impl(Config const &config)
   //      : m_acceptor{m_ioc, {config.address(), config.port()}},
