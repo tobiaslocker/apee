@@ -11,20 +11,15 @@ namespace ip = boost::asio::ip;       // from <boost/asio.hpp>
 using tcp = boost::asio::ip::tcp;     // from <boost/asio.hpp>
 namespace http = boost::beast::http;  // from <boost/beast/http.hpp>
 
-// api::Config::Config(const std::string &address, unsigned short port)
-//    : m_address{boost::asio::ip::make_address(address)}, m_port(port) {}
-
-// ip::address api::Config::address() const { return m_address; }
-
-// unsigned short api::Config::port() const { return m_port; }
-
 namespace apee {
 
 using namespace logger;
 
 Request from_beast(http::request<http::dynamic_body> req) {
   return Request(std::string_view(req.target().data(), req.target().length()),
-                 static_cast<Method>(req.method()));
+                 static_cast<Method>(req.method()),
+                 std::string(boost::asio::buffers_begin(req.body().data()),
+                             boost::asio::buffers_end(req.body().data())));
 }
 
 class Connection : public std::enable_shared_from_this<Connection> {
@@ -136,7 +131,8 @@ class Connection : public std::enable_shared_from_this<Connection> {
     m_response.set(http::field::server, "Beast");
 
     if (m_request_handler) {
-      m_request_handler->on_request(from_beast(m_request));
+      auto response = m_request_handler->on_request(from_beast(m_request));
+
       //    auto response =
       //    m_request_handler->on_get_request(m_request.target());
       //    m_response.set(http::field::content_type, "application/json");

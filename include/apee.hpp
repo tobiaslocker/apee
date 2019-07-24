@@ -57,9 +57,12 @@ struct Body {};
 struct Request {
   std::string_view m_request_uri;
   Method m_method;
+  std::string m_body;
 
-  Request(std::string_view const &request_uri, Method method)
-      : m_request_uri{request_uri}, m_method{method} {}
+  Request(std::string_view const &request_uri,
+          Method method,
+          std::string const &body)
+      : m_request_uri{request_uri}, m_method{method}, m_body{body} {}
 
   Method method() const;
   std::string_view request_uri() const;
