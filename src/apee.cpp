@@ -12,15 +12,7 @@ using tcp = boost::asio::ip::tcp;     // from <boost/asio.hpp>
 namespace http = boost::beast::http;  // from <boost/beast/http.hpp>
 
 namespace apee {
-
 using namespace logger;
-
-Request from_beast(http::request<http::dynamic_body> req) {
-  return Request(std::string_view(req.target().data(), req.target().length()),
-                 static_cast<Method>(req.method()),
-                 std::string(boost::asio::buffers_begin(req.body().data()),
-                             boost::asio::buffers_end(req.body().data())));
-}
 
 class Connection : public std::enable_shared_from_this<Connection> {
   src::severity_channel_logger<severity_level, std::string> m_lg;
@@ -32,6 +24,13 @@ class Connection : public std::enable_shared_from_this<Connection> {
   boost::asio::basic_waitable_timer<std::chrono::steady_clock> m_deadline{
       m_socket.get_executor().context(), std::chrono::seconds(60)};
   std::shared_ptr<AbstractRequestHandler> m_request_handler;
+
+Request from_beast(http::request<http::dynamic_body> req) {
+  return Request(std::string_view(req.target().data(), req.target().length()),
+                 static_cast<Method>(req.method()),
+                 std::string(boost::asio::buffers_begin(req.body().data()),
+                             boost::asio::buffers_end(req.body().data())));
+}
 
  public:
   Connection(tcp::socket socket,
@@ -65,23 +64,23 @@ class Connection : public std::enable_shared_from_this<Connection> {
   void process_request() {
     BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, info)
         << "Processing " << m_request.method() << " request";
-    BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, trace) << "Request:\n" << m_request;
+    BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, debug) << "Request:\n" << m_request;
     m_response.version(m_request.version());
     m_response.keep_alive(false);
     m_response.set(http::field::access_control_allow_origin, "*");
 
-    switch (m_request.method()) {
-      case http::verb::get:
-        handle_get_request();
-        break;
-      case http::verb::post:
-        handle_post_request();
-        break;
-      case http::verb::options:
+    if (m_request.method() == http::verb::get ||
+        m_request.method() == http::verb::post) {
+      m_response.result(http::status::ok);
+      m_response.set(http::field::server, "Beast");
+      if (m_request_handler) {
+        auto response = m_request_handler->on_request(from_beast(m_request));
+      } else {
+        handle_target_not_found();
+      }
+    } else if (m_request.method() == http::verb::options) {
         handle_options_request();
-        break;
-
-      default:
+    } else {
         BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, error)
             << "Invalid request-method";
         m_response.result(http::status::bad_request);
@@ -89,7 +88,6 @@ class Connection : public std::enable_shared_from_this<Connection> {
         boost::beast::ostream(m_response.body())
             << "Invalid request-method '"
             << m_request.method_string().to_string() << "'";
-        break;
     }
     write_response();
   }
@@ -102,46 +100,6 @@ class Connection : public std::enable_shared_from_this<Connection> {
     m_response.set(http::field::access_control_request_method, "GET, POST");
     m_response.set(http::field::access_control_allow_headers,
                    "Origin, Content-Type, X-Auth-Token");
-  }
-
-  void handle_post_request() {
-    BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, info)
-        << "POST " << m_request.target();
-    m_response.result(http::status::ok);
-    m_response.set(http::field::server, "Beast");
-
-    if (m_request_handler) {
-      //    auto response =
-      //    m_request_handler->on_post_request(m_request.target(),
-      //                                                       m_request.body());
-      //    if (!response.is_null()) {
-      //      m_response.set(http::field::content_type, "application/json");
-      //      m_response.set(http::field::access_control_allow_origin, "*");
-      //      boost::beast::ostream(m_response.body()) << response;
-      //      return;
-      //    }
-    }
-    handle_target_not_found();
-  }
-
-  void handle_get_request() {
-    BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, info)
-        << "GET " << m_request.target();
-    m_response.result(http::status::ok);
-    m_response.set(http::field::server, "Beast");
-
-    if (m_request_handler) {
-      auto response = m_request_handler->on_request(from_beast(m_request));
-
-      //    auto response =
-      //    m_request_handler->on_get_request(m_request.target());
-      //    m_response.set(http::field::content_type, "application/json");
-      //    m_response.set(http::field::access_control_allow_origin, "*");
-      //    boost::beast::ostream(m_response.body()) << response;
-
-    } else {
-      handle_target_not_found();
-    }
   }
 
   void handle_target_not_found() {
