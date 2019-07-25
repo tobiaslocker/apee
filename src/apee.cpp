@@ -26,10 +26,13 @@ class Connection : public std::enable_shared_from_this<Connection> {
   std::shared_ptr<AbstractRequestHandler> m_request_handler;
 
   Request from_beast(http::request<http::dynamic_body> req) {
-    return Request(std::string_view(req.target().data(), req.target().length()),
-                   static_cast<Method>(req.method()),
-                   std::string(boost::asio::buffers_begin(req.body().data()),
-                               boost::asio::buffers_end(req.body().data())));
+    return Request(
+        RequestLine(
+            static_cast<Method>(req.method()),
+            Uri(std::string_view(req.target().data(), req.target().length())),
+            Version(req.version())),
+        MessageBody(std::string(boost::asio::buffers_begin(req.body().data()),
+                                boost::asio::buffers_end(req.body().data()))));
   }
 
  public:
@@ -75,6 +78,7 @@ class Connection : public std::enable_shared_from_this<Connection> {
       m_response.set(http::field::server, "Beast");
       if (m_request_handler) {
         auto response = m_request_handler->on_request(from_beast(m_request));
+        boost::beast::ostream(m_response.body()) << response.body();
       } else {
         handle_target_not_found();
       }

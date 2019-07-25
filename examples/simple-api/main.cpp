@@ -4,10 +4,8 @@ using namespace apee;
 
 struct Handler : public AbstractRequestHandler {
   Response on_request(Request const &req) override {
-      Response r;
-      r.m_body = "Hi";
-      return r;
-      
+    return Response(StatusLine("HTTP/1.1 200 OK"),
+                    MessageBody("Hello from Handler!\n"));
   }
 };
 
