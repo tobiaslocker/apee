@@ -60,20 +60,33 @@ struct Uri {
   Uri(std::string_view const &uri);
 };
 
-struct Version {
-  Version(unsigned int http_version);
+class Version {
+  unsigned int m_major;
+  unsigned int m_minor;
+public:
+  Version(unsigned int http_version)
+      : m_major{http_version / 10}, m_minor{http_version % 10} {}
+  unsigned int major_version() const { return m_major; }
+  unsigned int minor_version() const { return m_minor; }
 };
 
-struct RequestLine {
-    Method m_method;
-    Uri m_request_uri;
-    Version m_version;
-  RequestLine(std::string_view const &line) {
-      // TODO split to types
-  }
+class RequestLine {
+  Method m_method;
+  Uri m_request_uri;
+  Version m_version;
+
+  //  RequestLine(std::string_view const &line) {
+  //    // TODO split to types
+  //  }
+
+ public:
   RequestLine(Method method,
               Uri const &request_uri,
-              Version const &http_version) {}
+              Version const &http_version)
+      : m_method{method}, m_request_uri{request_uri}, m_version{http_version} {}
+  Method method() const { return m_method; }
+  Uri uri() const { return m_request_uri; }
+  Version version() const { return m_version; }
 };
 
 struct MessageBody {
