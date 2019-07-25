@@ -29,7 +29,7 @@ class Connection : public std::enable_shared_from_this<Connection> {
     return Request(
         RequestLine(
             static_cast<Method>(req.method()),
-            Uri(std::string_view(req.target().data(), req.target().length())),
+            std::string_view(req.target().data(), req.target().length()),
             Version(req.version())),
         MessageBody(std::string(boost::asio::buffers_begin(req.body().data()),
                                 boost::asio::buffers_end(req.body().data()))));

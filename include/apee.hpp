@@ -52,27 +52,73 @@ inline std::ostream &operator<<(std::ostream &out, Method const &op) {
   return out;
 }
 
-struct StatusLine {
-  StatusLine(std::string_view const &line) {}
+enum class StatusCode {
+  Continue = 100,
+  SwitchingProtocols = 101,
+  OK = 200,
+  Created = 201,
+  Accepted = 202,
+  NonAuthoritativeInformation = 203,
+  NoContent = 204,
+  ResetContent = 205,
+  PartialContent = 206,
+  MultipleChoices = 300,
+  MovedPermanently = 301,
+  Found = 302,
+  SeeOther = 303,
+  NotModified = 304,
+  UseProxy = 305,
+  TemporaryRedirect = 307,
+  BadRequest = 400,
+  Unauthorized = 401,
+  PaymentRequired = 402,
+  Forbidden = 403,
+  NotFound = 404,
+  MethodNotAllowed = 405,
+  NotAcceptable = 406,
+  ProxyAuthenticationRequired = 407,
+  RequestTimeOut = 408,
+  Conflict = 409,
+  Gone = 410,
+  LengthRequired = 411,
+  PreconditionFailed = 412,
+  RequestEntityTooLarge = 413,
+  RequestUriTooLarge = 414,
+  UnsupportedMediaType = 415,
+  RequestedRangeNotSatisfiable = 416,
+  ExpectationFailed = 417,
+  InternalServerError = 500,
+  NotImplemented = 501,
+  BadGateway = 502,
+  ServiceUnavailable = 503,
+  GatewayTimeOut = 504,
+  HttpVersionNotSupported = 505,
 };
 
-struct Uri {
-  Uri(std::string_view const &uri);
+struct StatusLine {
+  StatusLine(std::string_view const &line) {}
+  StatusLine(StatusCode status) {}
 };
 
 class Version {
   unsigned int m_major;
   unsigned int m_minor;
-public:
+
+ public:
   Version(unsigned int http_version)
       : m_major{http_version / 10}, m_minor{http_version % 10} {}
   unsigned int major_version() const { return m_major; }
   unsigned int minor_version() const { return m_minor; }
 };
 
+inline std::ostream &operator<<(std::ostream &out, Version const &op) {
+  out << "HTTP/" << op.major_version() << "." << op.minor_version();
+  return out;
+}
+
 class RequestLine {
   Method m_method;
-  Uri m_request_uri;
+  std::string_view m_request_uri;
   Version m_version;
 
   //  RequestLine(std::string_view const &line) {
@@ -81,11 +127,11 @@ class RequestLine {
 
  public:
   RequestLine(Method method,
-              Uri const &request_uri,
+              std::string_view const &request_uri,
               Version const &http_version)
       : m_method{method}, m_request_uri{request_uri}, m_version{http_version} {}
   Method method() const { return m_method; }
-  Uri uri() const { return m_request_uri; }
+  std::string_view uri() const { return m_request_uri; }
   Version version() const { return m_version; }
 };
 
@@ -99,24 +145,16 @@ inline std::ostream &operator<<(std::ostream &out, MessageBody const &op) {
   return out;
 }
 
-struct Request {
+class Request {
   RequestLine m_request_line;
   MessageBody m_body;
 
+ public:
   Request(RequestLine const &request_line, MessageBody const &body)
       : m_request_line{request_line}, m_body{body} {}
 
   RequestLine request_line() const { return m_request_line; }
   MessageBody body() const { return m_body; }
-
-  //  std::string_view m_request_uri;
-  //  Method m_method;
-  //  std::string m_body;
-
-  //  Request(std::string_view const &request_uri,
-  //          Method method,
-  //          std::string const &body)
-  //      : m_request_uri{request_uri}, m_method{method}, m_body{body} {}
 };
 
 class Response {
