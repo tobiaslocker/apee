@@ -95,16 +95,12 @@ enum class StatusCode {
   HttpVersionNotSupported = 505,
 };
 
-struct StatusLine {
-  StatusLine(std::string_view const &line) {}
-  StatusLine(StatusCode status) {}
-};
-
 class Version {
   unsigned int m_major;
   unsigned int m_minor;
 
  public:
+  Version() : m_major{1}, m_minor{1} {}
   Version(unsigned int http_version)
       : m_major{http_version / 10}, m_minor{http_version % 10} {}
   unsigned int major_version() const { return m_major; }
@@ -116,14 +112,22 @@ inline std::ostream &operator<<(std::ostream &out, Version const &op) {
   return out;
 }
 
+class StatusLine {
+  StatusCode m_status;
+  Version m_version;
+
+ public:
+  StatusLine(StatusCode status) : m_status{status} {}
+  StatusLine(StatusCode status, Version const &version)
+      : m_status{status}, m_version{version} {}
+  StatusCode status_code() const { return m_status; }
+  Version version() const { return m_version; }
+};
+
 class RequestLine {
   Method m_method;
   std::string_view m_request_uri;
   Version m_version;
-
-  //  RequestLine(std::string_view const &line) {
-  //    // TODO split to types
-  //  }
 
  public:
   RequestLine(Method method,

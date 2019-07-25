@@ -4,7 +4,8 @@ using namespace apee;
 
 struct Handler : public AbstractRequestHandler {
   Response on_request(Request const &req) override {
-    if (req.request_line().uri() == "/moop") {
+    if (req.request_line().uri() == "/moop" &&
+        req.request_line().method() == Method::GET) {
       return Response(StatusCode::OK, MessageBody("Hello from Handler!\n"));
     }
     return Response(StatusCode::NotFound,
