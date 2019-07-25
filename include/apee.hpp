@@ -71,8 +71,8 @@ struct Request {
 };
 
 struct Response {
-    std::string m_body = "Hello";
-    std::string body() const { return m_body; }
+  std::string m_body = "Hello";
+  std::string body() const { return m_body; }
 };
 
 struct Config {

@@ -25,12 +25,12 @@ class Connection : public std::enable_shared_from_this<Connection> {
       m_socket.get_executor().context(), std::chrono::seconds(60)};
   std::shared_ptr<AbstractRequestHandler> m_request_handler;
 
-Request from_beast(http::request<http::dynamic_body> req) {
-  return Request(std::string_view(req.target().data(), req.target().length()),
-                 static_cast<Method>(req.method()),
-                 std::string(boost::asio::buffers_begin(req.body().data()),
-                             boost::asio::buffers_end(req.body().data())));
-}
+  Request from_beast(http::request<http::dynamic_body> req) {
+    return Request(std::string_view(req.target().data(), req.target().length()),
+                   static_cast<Method>(req.method()),
+                   std::string(boost::asio::buffers_begin(req.body().data()),
+                               boost::asio::buffers_end(req.body().data())));
+  }
 
  public:
   Connection(tcp::socket socket,
@@ -79,15 +79,14 @@ Request from_beast(http::request<http::dynamic_body> req) {
         handle_target_not_found();
       }
     } else if (m_request.method() == http::verb::options) {
-        handle_options_request();
+      handle_options_request();
     } else {
-        BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, error)
-            << "Invalid request-method";
-        m_response.result(http::status::bad_request);
-        m_response.set(http::field::content_type, "text/plain");
-        boost::beast::ostream(m_response.body())
-            << "Invalid request-method '"
-            << m_request.method_string().to_string() << "'";
+      BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, error) << "Invalid request-method";
+      m_response.result(http::status::bad_request);
+      m_response.set(http::field::content_type, "text/plain");
+      boost::beast::ostream(m_response.body())
+          << "Invalid request-method '" << m_request.method_string().to_string()
+          << "'";
     }
     write_response();
   }
