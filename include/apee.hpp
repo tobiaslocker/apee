@@ -139,13 +139,16 @@ class RequestLine {
   Version version() const { return m_version; }
 };
 
-struct MessageBody {
-  std::string_view m_body;
-  MessageBody(std::string_view const &body) : m_body{body} {}
+class MessageBody {
+  std::string_view m_data;
+
+ public:
+  MessageBody(std::string_view const &data) : m_data{data} {}
+  std::string_view str() const { return m_data; }
 };
 
 inline std::ostream &operator<<(std::ostream &out, MessageBody const &op) {
-  out << op.m_body;
+  out << op.str();
   return out;
 }
 

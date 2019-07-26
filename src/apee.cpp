@@ -81,7 +81,6 @@ class Connection : public std::enable_shared_from_this<Connection> {
         m_response.result(
             static_cast<http::status>(response.status_line().status_code()));
         boost::beast::ostream(m_response.body()) << response.body();
-
       } else {
         handle_target_not_found();
       }
