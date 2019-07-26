@@ -199,4 +199,90 @@ Service::Service(Service &&) noexcept = default;
 
 Service &Service::operator=(Service &&) noexcept = default;
 
+std::ostream &operator<<(std::ostream &out, const Method &op) {
+  switch (op) {
+    case Method::UNKNOWN:
+      out << "UNKNOWN";
+      break;
+    case Method::DELETE:
+      out << "DELETE";
+      break;
+    case Method::GET:
+      out << "GET";
+      break;
+    case Method::HEAD:
+      out << "HEAD";
+      break;
+    case Method::POST:
+      out << "POST";
+      break;
+    case Method::PUT:
+      out << "PUT";
+      break;
+    case Method::CONNECT:
+      out << "CONNECT";
+      break;
+    case Method::OPTIONS:
+      out << "OPTIONS";
+      break;
+    case Method::TRACE:
+      out << "TRACE";
+      break;
+  }
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, StatusCode const &op) {
+  out << static_cast<http::status>(op);
+  return out;
+}
+
+std::ostream &operator<<(std::ostream &out, Version const &op) {
+  out << "HTTP/" << op.major_version() << "." << op.minor_version();
+  return out;
+}
+
+StatusLine::StatusLine(StatusCode status) : m_status{status} {}
+
+StatusLine::StatusLine(StatusCode status, Version const &version)
+    : m_status{status}, m_version{version} {}
+
+StatusCode StatusLine::status_code() const { return m_status; }
+
+Version StatusLine::version() const { return m_version; }
+
+RequestLine::RequestLine(Method method,
+                         std::string_view const &request_uri,
+                         Version const &http_version)
+    : m_method{method}, m_request_uri{request_uri}, m_version{http_version} {}
+
+Method RequestLine::method() const { return m_method; }
+
+std::string_view RequestLine::uri() const { return m_request_uri; }
+
+Version RequestLine::version() const { return m_version; }
+
+MessageBody::MessageBody(std::string_view const &data) : m_data{data} {}
+
+std::ostream &operator<<(std::ostream &out, const MessageBody &op) {
+  out << op.str();
+  return out;
+}
+
+Request::Request(RequestLine const &request_line, MessageBody const &body)
+    : m_request_line{request_line}, m_body{body} {}
+
+RequestLine Request::request_line() const { return m_request_line; }
+
+MessageBody Request::body() const { return m_body; }
+
+Response::Response(StatusLine const &status_line, MessageBody const &body)
+    : m_status_line{status_line}, m_body{body} {}
+
+MessageBody Response::body() const { return m_body; }
+
+StatusLine Response::status_line() const { return m_status_line; }
+
+AbstractRequestHandler::~AbstractRequestHandler() = default;
+
 }  // namespace apee

@@ -19,38 +19,7 @@ enum class Method {
   TRACE
 };
 
-inline std::ostream &operator<<(std::ostream &out, Method const &op) {
-  switch (op) {
-    case Method::UNKNOWN:
-      out << "UNKNOWN";
-      break;
-    case Method::DELETE:
-      out << "DELETE";
-      break;
-    case Method::GET:
-      out << "GET";
-      break;
-    case Method::HEAD:
-      out << "HEAD";
-      break;
-    case Method::POST:
-      out << "POST";
-      break;
-    case Method::PUT:
-      out << "PUT";
-      break;
-    case Method::CONNECT:
-      out << "CONNECT";
-      break;
-    case Method::OPTIONS:
-      out << "OPTIONS";
-      break;
-    case Method::TRACE:
-      out << "TRACE";
-      break;
-  }
-  return out;
-}
+std::ostream &operator<<(std::ostream &out, Method const &op);
 
 enum class StatusCode {
   Continue = 100,
@@ -95,6 +64,8 @@ enum class StatusCode {
   HttpVersionNotSupported = 505,
 };
 
+std::ostream &operator<<(std::ostream &out, StatusCode const &op);
+
 class Version {
   unsigned int m_major;
   unsigned int m_minor;
@@ -107,21 +78,17 @@ class Version {
   unsigned int minor_version() const { return m_minor; }
 };
 
-inline std::ostream &operator<<(std::ostream &out, Version const &op) {
-  out << "HTTP/" << op.major_version() << "." << op.minor_version();
-  return out;
-}
+std::ostream &operator<<(std::ostream &out, Version const &op);
 
 class StatusLine {
   StatusCode m_status;
   Version m_version;
 
  public:
-  StatusLine(StatusCode status) : m_status{status} {}
-  StatusLine(StatusCode status, Version const &version)
-      : m_status{status}, m_version{version} {}
-  StatusCode status_code() const { return m_status; }
-  Version version() const { return m_version; }
+  StatusLine(StatusCode status);
+  StatusLine(StatusCode status, Version const &version);
+  StatusCode status_code() const;
+  Version version() const;
 };
 
 class RequestLine {
@@ -132,36 +99,31 @@ class RequestLine {
  public:
   RequestLine(Method method,
               std::string_view const &request_uri,
-              Version const &http_version)
-      : m_method{method}, m_request_uri{request_uri}, m_version{http_version} {}
-  Method method() const { return m_method; }
-  std::string_view uri() const { return m_request_uri; }
-  Version version() const { return m_version; }
+              Version const &http_version);
+  Method method() const;
+  std::string_view uri() const;
+  Version version() const;
 };
 
 class MessageBody {
   std::string_view m_data;
 
  public:
-  MessageBody(std::string_view const &data) : m_data{data} {}
+  MessageBody(std::string_view const &data);
   std::string_view str() const { return m_data; }
 };
 
-inline std::ostream &operator<<(std::ostream &out, MessageBody const &op) {
-  out << op.str();
-  return out;
-}
+std::ostream &operator<<(std::ostream &out, MessageBody const &op);
 
 class Request {
   RequestLine m_request_line;
   MessageBody m_body;
 
  public:
-  Request(RequestLine const &request_line, MessageBody const &body)
-      : m_request_line{request_line}, m_body{body} {}
+  Request(RequestLine const &request_line, MessageBody const &body);
 
-  RequestLine request_line() const { return m_request_line; }
-  MessageBody body() const { return m_body; }
+  RequestLine request_line() const;
+  MessageBody body() const;
 };
 
 class Response {
@@ -169,11 +131,10 @@ class Response {
   MessageBody m_body;
 
  public:
-  Response(StatusLine const &status_line, MessageBody const &body)
-      : m_status_line{status_line}, m_body{body} {}
+  Response(StatusLine const &status_line, MessageBody const &body);
 
-  MessageBody body() const { return m_body; }
-  StatusLine status_line() const { return m_status_line; }
+  MessageBody body() const;
+  StatusLine status_line() const;
 };
 
 struct Config {
@@ -182,6 +143,7 @@ struct Config {
 };
 
 struct AbstractRequestHandler {
+  virtual ~AbstractRequestHandler();
   virtual Response on_request(Request const &) = 0;
 };
 

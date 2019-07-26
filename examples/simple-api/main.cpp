@@ -14,6 +14,7 @@ struct Handler : public AbstractRequestHandler {
 };
 
 int main() {
+  std::cout << StatusCode::OK << '\n';
   auto handler = std::make_shared<Handler>();
   Service s(handler);
   s.run();
