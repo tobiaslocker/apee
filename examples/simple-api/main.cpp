@@ -7,6 +7,7 @@ struct Handler : public AbstractRequestHandler {
     if (req.request_line().uri() == "/moop" &&
         req.request_line().method() == Method::GET) {
       return Response(StatusCode::OK, MessageBody("Hello from Handler!\n"));
+      //      return Response(StatusCode::OK, "Hello from Handler!\n");
     }
     return Response(StatusCode::NotFound,
                     MessageBody("Hello from Handler! Target not found!\n"));

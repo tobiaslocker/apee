@@ -78,7 +78,10 @@ class Connection : public std::enable_shared_from_this<Connection> {
       m_response.set(http::field::server, "Beast");
       if (m_request_handler) {
         auto response = m_request_handler->on_request(from_beast(m_request));
+        m_response.result(
+            static_cast<http::status>(response.status_line().status_code()));
         boost::beast::ostream(m_response.body()) << response.body();
+
       } else {
         handle_target_not_found();
       }
@@ -121,7 +124,7 @@ class Connection : public std::enable_shared_from_this<Connection> {
           self->m_socket.shutdown(tcp::socket::shutdown_send, ec);
           self->m_deadline.cancel();
         });
-    BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, trace) << "Response:\n"
+    BOOST_LOG_CHANNEL_SEV(m_lg, m_channel, debug) << "Response:\n"
                                                   << m_response;
   }
 
