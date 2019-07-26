@@ -289,5 +289,4 @@ Version::Version() : major{1}, minor{1} {}
 
 Version::Version(unsigned int http_version)
     : major{http_version / 10}, minor{http_version % 10} {}
-
 }  // namespace apee

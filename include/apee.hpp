@@ -136,6 +136,7 @@ class Response {
 struct Config {
   std::string address;
   unsigned short port;
+  std::string server_name;
 };
 
 struct AbstractRequestHandler {
