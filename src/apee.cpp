@@ -238,7 +238,7 @@ std::ostream &operator<<(std::ostream &out, StatusCode const &op) {
 }
 
 std::ostream &operator<<(std::ostream &out, Version const &op) {
-  out << "HTTP/" << op.major_version() << "." << op.minor_version();
+  out << "HTTP/" << op.major << "." << op.minor;
   return out;
 }
 
@@ -284,5 +284,10 @@ MessageBody Response::body() const { return m_body; }
 StatusLine Response::status_line() const { return m_status_line; }
 
 AbstractRequestHandler::~AbstractRequestHandler() = default;
+
+Version::Version() : major{1}, minor{1} {}
+
+Version::Version(unsigned int http_version)
+    : major{http_version / 10}, minor{http_version % 10} {}
 
 }  // namespace apee

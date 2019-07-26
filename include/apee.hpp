@@ -66,16 +66,12 @@ enum class StatusCode {
 
 std::ostream &operator<<(std::ostream &out, StatusCode const &op);
 
-class Version {
-  unsigned int m_major;
-  unsigned int m_minor;
+struct Version {
+  unsigned int major;
+  unsigned int minor;
 
- public:
-  Version() : m_major{1}, m_minor{1} {}
-  Version(unsigned int http_version)
-      : m_major{http_version / 10}, m_minor{http_version % 10} {}
-  unsigned int major_version() const { return m_major; }
-  unsigned int minor_version() const { return m_minor; }
+  Version();
+  Version(unsigned int http_version);
 };
 
 std::ostream &operator<<(std::ostream &out, Version const &op);
